@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>视觉稿模板 · 帧式结构 + 调参面板</title>
+<!--
+  ============================================================
+  视觉稿模板（参数化框架）· 使用说明
+  ------------------------------------------------------------
+  1. 复制本文件到你的项目，改名为你的视觉稿（如 mock.html）
+  2. 【替换设计令牌】:root 里的 --paper/--ink/--accent/字体等
+     全部换成【你自己的风格】。模板默认值是中性占位符，
+     不得当成品风格使用。
+  3. 【加帧】复制 <section class="frame"> 结构，每帧 = 一个页面，
+     标上帧号与说明（如"01 首页 / 02 详情页 / 03 空状态"）。
+  4. 【加参数】在 SCHEMA 里增删条目即可自动生成面板控件：
+     - 视觉参数: ['--变量名','中文名','color'|'range',min,max,step]
+     - 行为参数: 同样方式，变量在 CSS 里被动画使用
+  5. 人调参满意后点「导出参数 JSON」→ 参数表就是实现契约，
+     实现方照参数落地，不自由发挥。
+  6. 动效参数（时长/缓动/幅度/延迟）一定要进面板——
+     静态帧承载不了行为，行为参数化才能对齐"手感"。
+  ============================================================
+-->
+<style>
+  /* ===== 设计令牌（TOKENS）=====
+     注意：以下为中性占位符，复制后请替换成项目自己的风格。 */
+  :root {
+    /* 视觉参数 */
+    --paper: #FAFAF9;        /* 纸面底色 */
+    --ink: #1F1F1F;          /* 正文墨色 */
+    --accent: #C8402A;       /* 强调色 */
+    --card-bg: #FFFFFF;      /* 卡片底色 */
+    --radius: 12;            /* 圆角 px */
+    --shadow-strength: 1;    /* 投影强度 */
+    --ds: 1;                 /* 展示字号倍率 */
+    --us: 1;                 /* UI 字号倍率 */
+    /* 行为参数（动效）—— 演示下落弹跳用，项目里换成自己的动效 */
+    --anim-drop-duration: 0.95s;
+    --anim-drop-easing: cubic-bezier(0.25, 0.8, 0.35, 1);
+    --anim-drop-bounce: 18px;
+    --anim-drop-delay: 0s;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: color-mix(in srgb, var(--ink) 6%, var(--paper));
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 28px 24px 60px;
+  }
+  h1 { font-size: 20px; letter-spacing: .06em; margin-bottom: 4px; }
+  .sub { font-size: 12px; opacity: .6; margin-bottom: 22px; }
+  .board { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+
+  /* 帧式结构：每帧 = 一个页面（手机壳示例） */
+  .frame { display: flex; flex-direction: column; gap: 8px; }
+  .flabel { font-size: 11px; opacity: .65; letter-spacing: .05em; }
+  .phone {
+    width: 300px; height: 620px; border-radius: 34px;
+    background: color-mix(in srgb, var(--ink) 8%, var(--paper));
+    border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+    padding: 14px; box-shadow: 0 18px 44px color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .screen {
+    width: 100%; height: 100%; border-radius: 24px; overflow: hidden;
+    background: var(--paper); display: flex; flex-direction: column;
+    border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  }
+  /* 示例页面元素（全部由令牌驱动，展示调参效果） */
+  .demo-nav { display: flex; justify-content: space-between; padding: 18px 18px 0; font-size: calc(var(--us) * 11px); opacity: .6; }
+  .demo-title { font-size: calc(var(--ds) * 22px); padding: 14px 18px 6px; letter-spacing: .04em; }
+  .demo-strip { display: flex; gap: 10px; padding: 8px 18px 4px; }
+  .demo-stat {
+    flex: 1; background: var(--card-bg); border-radius: calc(var(--radius) * 1px);
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) calc(var(--shadow-strength) * 5%), transparent);
+    padding: 10px 12px;
+  }
+  .demo-stat b { font-size: calc(var(--ds) * 16px); }
+  .demo-stat i { display: block; font-style: normal; font-size: calc(var(--us) * 10px); opacity: .5; margin-top: 2px; }
+  .demo-card {
+    margin: 12px 18px; background: var(--card-bg); border-radius: calc(var(--radius) * 1.2px);
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) calc(var(--shadow-strength) * 7%), transparent);
+    padding: 16px; flex: 1;
+  }
+  .demo-btn {
+    margin: 0 18px 18px; padding: 12px; text-align: center; border-radius: calc(var(--radius) * 1px);
+    background: var(--accent); color: #FFF; font-size: calc(var(--us) * 14px); letter-spacing: .2em;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) calc(var(--shadow-strength) * 26%), transparent);
+  }
+  /* 行为参数演示：下落弹跳的小球（duration/easing/bounce 全部走令牌） */
+  .demo-stage { position: relative; flex: 1; overflow: hidden; background: color-mix(in srgb, var(--ink) 3%, var(--paper)); }
+  .demo-ball {
+    position: absolute; left: 50%; bottom: 60px; width: 46px; height: 46px;
+    margin-left: -23px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 6px 14px color-mix(in srgb, var(--accent) 30%, transparent);
+    animation: demoDrop var(--anim-drop-duration) var(--anim-drop-easing) var(--anim-drop-delay) infinite;
+  }
+  @keyframes demoDrop {
+    0%   { transform: translateY(-300px); }
+    55%  { transform: translateY(0); }
+    70%  { transform: translateY(calc(var(--anim-drop-bounce) * -1)); }
+    82%  { transform: translateY(0); }
+    91%  { transform: translateY(calc(var(--anim-drop-bounce) * -0.4)); }
+    100% { transform: translateY(0); }
+  }
+  .stage-tip { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 10px; opacity: .4; letter-spacing: .1em; }
+  /* 行为规格清单卡片 */
+  .spec {
+    width: 360px; background: var(--card-bg); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+    border-radius: 16px; padding: 14px 16px; font-size: 11px;
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--ink) 8%, transparent);
+  }
+  .spec table { width: 100%; border-collapse: collapse; }
+  .spec th, .spec td { border-bottom: 1px dashed color-mix(in srgb, var(--ink) 16%, transparent); padding: 6px 4px; text-align: left; vertical-align: top; }
+  .spec th { opacity: .55; letter-spacing: .06em; }
+  .spec-note { margin-top: 8px; opacity: .55; font-size: 10px; line-height: 1.6; }
+
+  /* ===== 调参面板（机制固定，参数随 SCHEMA 自动生成）===== */
+  #panel {
+    position: sticky; top: 20px; width: 280px; flex: 0 0 auto;
+    background: var(--card-bg); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+    border-radius: 16px; padding: 16px;
+    box-shadow: 0 12px 32px color-mix(in srgb, var(--ink) 10%, transparent);
+    font-size: 12px;
+  }
+  #panel h2 { font-size: 13px; letter-spacing: .1em; margin-bottom: 10px; }
+  .grp { margin-bottom: 12px; }
+  .grp > .gt { font-size: 11px; opacity: .55; letter-spacing: .08em; margin: 10px 0 6px; border-top: 1px dashed color-mix(in srgb, var(--ink) 18%, transparent); padding-top: 8px; }
+  .it { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .it label { flex: 1; opacity: .8; }
+  .it input[type=color] { width: 34px; height: 22px; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); border-radius: 4px; padding: 0; background: none; }
+  .it input[type=range] { flex: 1; }
+  .it .val { width: 44px; text-align: right; font-variant-numeric: tabular-nums; opacity: .7; }
+  #jsonOut { width: 100%; height: 110px; font-size: 10px; border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent); border-radius: 8px; padding: 8px; resize: none; background: color-mix(in srgb, var(--ink) 4%, var(--paper)); }
+  .pbtns { display: flex; gap: 8px; margin-top: 8px; }
+  .pbtns button {
+    flex: 1; padding: 8px 0; border: none; border-radius: 8px; cursor: pointer; font-size: 12px;
+    background: var(--ink); color: var(--paper);
+  }
+  .pbtns button.ghost { background: none; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<h1>视觉稿 · 帧式 + 调参面板模板</h1>
+<div class="sub">复制本文件到项目 → 替换 :root 设计令牌为你的风格 → 加帧加参数 → 调参后导出 JSON 作为实现契约</div>
+
+<div class="board">
+
+  <!-- ===== 帧 01：示例页（占位，改成你的页面）===== -->
+  <div class="frame">
+    <div class="flabel"><b>01</b> 示例页 · 首页（替换为你的页面）</div>
+    <div class="phone"><div class="screen">
+      <div class="demo-nav"><span>设置</span><span>回顾</span></div>
+      <div class="demo-title">页面标题</div>
+      <div class="demo-strip">
+        <div class="demo-stat"><b>12<small>个</small></b><i>总数</i></div>
+        <div class="demo-stat"><b>7<small>个</small></b><i>本月</i></div>
+      </div>
+      <div class="demo-card">这里是内容卡片。字号 / 圆角 / 投影 / 卡片底色都由面板实时驱动，调到你满意为止。</div>
+      <div class="demo-btn">主操作</div>
+    </div></div>
+  </div>
+
+  <!-- ===== 帧 02：行为演示（看动效参数效果）===== -->
+  <div class="frame">
+    <div class="flabel"><b>02</b> 行为演示 · 动效参数实时生效（时长/缓动/弹跳幅度）</div>
+    <div class="phone"><div class="screen">
+      <div class="demo-stage">
+        <div class="demo-ball"></div>
+        <div class="stage-tip">小球下落由 --anim-* 令牌驱动 · 在右侧面板调"行为参数"</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ===== 帧 03：行为规格清单（改版必做"行为清点"）===== -->
+  <div class="frame">
+    <div class="flabel"><b>03</b> 行为规格清单 · 帧图里的行为承诺必须在这里登记（防动效静默丢失）</div>
+    <div class="spec">
+      <table>
+        <tr><th>帧</th><th>行为</th><th>触发</th><th>参数引用</th><th>处置</th></tr>
+        <tr><td>02</td><td>小球下落弹跳</td><td>页面加载</td><td>--anim-drop-*</td><td>保留</td></tr>
+        <tr><td>…</td><td>（你的行为）</td><td>点击/加载/滚动</td><td>（--anim-*）</td><td>保留/变更/删除</td></tr>
+      </table>
+      <p class="spec-note">改版时逐条对照旧版行为标 保留/变更/删除，删除必须写理由；帧图里"落进……筐"这类文字承诺，都要在这里占一行。</p>
+    </div>
+  </div>
+
+  <!-- ===== 调参面板 ===== -->
+  <aside id="panel">
+    <h2>调 参 面 板</h2>
+    <div id="groups"></div>
+    <textarea id="jsonOut" readonly placeholder="调参后自动生成参数 JSON，点「导出」下载"></textarea>
+    <div class="pbtns">
+      <button id="btnExport" type="button">导出参数 JSON</button>
+      <button id="btnReset" class="ghost" type="button">重置</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* ============ 参数 Schema：加参数就加在这里，面板控件自动生成 ============ */
+const DEFAULTS = {
+  // 视觉参数
+  '--paper': '#FAFAF9', '--ink': '#1F1F1F', '--accent': '#C8402A', '--card-bg': '#FFFFFF',
+  '--radius': 12, '--shadow-strength': 1, '--ds': 1, '--us': 1,
+  // 行为参数（动效）—— 项目里替换成自己的动效参数
+  '--anim-drop-duration': 0.95, '--anim-drop-easing': 'cubic-bezier(0.25, 0.8, 0.35, 1)', '--anim-drop-bounce': 18, '--anim-drop-delay': 0,
+};
+const SCHEMA = [
+  { g: '色彩', items: [
+    ['--paper', '纸面底色', 'color'], ['--ink', '正文墨色', 'color'],
+    ['--accent', '强调色', 'color'], ['--card-bg', '卡片底色', 'color'],
+  ]},
+  { g: '字体与间距', items: [
+    ['--ds', '展示字号', 'range', 0.85, 1.35, 0.01], ['--us', 'UI 字号', 'range', 0.85, 1.2, 0.01],
+  ]},
+  { g: '卡片', items: [
+    ['--radius', '圆角 px', 'range', 0, 24, 1], ['--shadow-strength', '投影强度', 'range', 0, 2, 0.05],
+  ]},
+  { g: '行为参数（动效）', items: [
+    ['--anim-drop-duration', '下落时长 s', 'range', 0.3, 2, 0.05],
+    ['--anim-drop-easing', '缓动曲线', 'select', ['ease', 'ease-in', 'ease-out', 'ease-in-out', 'cubic-bezier(0.25, 0.8, 0.35, 1)']],
+    ['--anim-drop-bounce', '弹跳幅度 px', 'range', 0, 60, 1],
+    ['--anim-drop-delay', '起始延迟 s', 'range', 0, 1, 0.05],
+  ]},
+];
+const LSKEY = 'mockup-params';
+
+let cur = JSON.parse(JSON.stringify(DEFAULTS));
+try { Object.assign(cur, JSON.parse(localStorage.getItem(LSKEY) || '{}')); } catch (e) {}
+
+/* 行为参数需要单位才能被 CSS 动画消费：时长/延迟补 s，幅度补 px */
+const UNITS = { '--anim-drop-duration': 's', '--anim-drop-delay': 's', '--anim-drop-bounce': 'px' };
+function applyAll() {
+  for (const [k, v] of Object.entries(cur)) {
+    const cssVal = UNITS[k] != null ? v + UNITS[k] : v;
+    document.documentElement.style.setProperty(k, cssVal);
+  }
+  document.getElementById('jsonOut').value = JSON.stringify(cur, null, 2);
+  try { localStorage.setItem(LSKEY, JSON.stringify(cur)); } catch (e) {}
+  syncInputs();
+}
+function syncInputs() {
+  document.querySelectorAll('#groups [data-var]').forEach(el => {
+    const k = el.dataset.var;
+    if (el.tagName === 'INPUT' && el.type === 'color') el.value = cur[k];
+    if (el.tagName === 'INPUT' && el.type === 'range') el.value = cur[k];
+    if (el.tagName === 'SELECT') el.value = String(cur[k]);
+    const val = el.closest('.it') && el.closest('.it').querySelector('.val');
+    if (val) val.textContent = el.tagName === 'SELECT' ? (cur[k] + '').slice(0, 24) : cur[k];
+  });
+}
+function buildPanel() {
+  const box = document.getElementById('groups');
+  box.innerHTML = '';
+  SCHEMA.forEach(grp => {
+    const g = document.createElement('div');
+    g.className = 'grp';
+    const gt = document.createElement('div');
+    gt.className = 'gt';
+    gt.textContent = grp.g;
+    g.appendChild(gt);
+    grp.items.forEach(([k, label, type, ...opt]) => {
+      const it = document.createElement('div');
+      it.className = 'it';
+      const lb = document.createElement('label');
+      lb.textContent = label;
+      it.appendChild(lb);
+      let ctrl;
+      if (type === 'color') {
+        ctrl = document.createElement('input');
+        ctrl.type = 'color';
+        ctrl.dataset.var = k;
+        ctrl.addEventListener('input', () => { cur[k] = ctrl.value; applyAll(); });
+      } else if (type === 'select') {
+        ctrl = document.createElement('select');
+        ctrl.dataset.var = k;
+        opt[0].forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v.slice(0, 26); ctrl.appendChild(o); });
+        ctrl.addEventListener('change', () => { cur[k] = ctrl.value; applyAll(); });
+      } else {
+        ctrl = document.createElement('input');
+        ctrl.type = 'range';
+        ctrl.min = opt[0]; ctrl.max = opt[1]; ctrl.step = opt[2];
+        ctrl.dataset.var = k;
+        ctrl.addEventListener('input', () => { cur[k] = parseFloat(ctrl.value); applyAll(); });
+      }
+      it.appendChild(ctrl);
+      const val = document.createElement('span');
+      val.className = 'val';
+      it.appendChild(val);
+      g.appendChild(it);
+    });
+    box.appendChild(g);
+  });
+}
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(cur, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'design-params.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+buildPanel();
+applyAll();
+document.getElementById('btnExport').addEventListener('click', exportJSON);
+document.getElementById('btnReset').addEventListener('click', () => {
+  cur = JSON.parse(JSON.stringify(DEFAULTS));
+  localStorage.removeItem(LSKEY);
+  applyAll();
+});
+</script>
+</body>
+</html>
