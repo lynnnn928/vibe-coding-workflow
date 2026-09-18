@@ -1,0 +1,98 @@
+examples:
+  - id: start-new-project
+    title:
+      zh: 启动一个新项目（按工作流走阶段 0-3）
+      en: Start a new project (follow stages 0-3)
+    description:
+      zh: 立项、需求、完成标准、设计全流程走一遍，产出文档齐套
+      en: Run through setup, requirements, completion criteria, and design with all documents produced
+    prompt:
+      zh: |-
+        我准备开始一个新项目：{{一句话描述项目}}。
+        请按 vibe-coding 工作流推进：先做阶段 0 立项（git 基线、环境清单、工具降级预案、被砍清单），
+        然后和我一起厘清需求、拆分任务，并产出需求文档；进入阶段 2 时先定义"完成"标准
+        （任务标注开发自测/用户验收 + 用户可操作的验收测试方案）；阶段 3 基于用户流程出页面清单、
+        IA 文档，再用模板生成带调参面板的视觉稿。每阶段都要我确认后再进入下一阶段。
+      en: |-
+        I'm starting a new project: {{one-line project description}}.
+        Follow the vibe-coding workflow: run Stage 0 setup first (git baseline, environment checklist,
+        tool degradation plan, cut-scope list), then clarify requirements and break down tasks with me,
+        produce a requirements doc; in Stage 2 define "done" first (tag tasks as dev-self-test /
+        user-acceptance + a user-runnable acceptance test plan); in Stage 3 derive a page list from user
+        flows, confirm the IA doc, then generate a visual mockup with a parameter panel from the template.
+        Get my confirmation at every stage before moving on.
+  - id: create-mockup-panel
+    title:
+      zh: 生成带调参面板的视觉稿
+      en: Generate a visual mockup with a parameter panel
+    description:
+      zh: 用模板生成帧式视觉稿，参数面板含视觉与行为参数
+      en: Generate a frame-based mockup from the template with visual and behavior parameters
+    prompt:
+      zh: |-
+        请用 vibe-coding-workflow 的视觉稿模板（assets/mockup-template.html）为 {{项目名}} 生成视觉稿。
+        页面清单：{{页面列表}}。要求：
+        1. 复制模板后把设计令牌替换成我们的风格：{{风格描述，如冷中性/暖纸/品牌色}}
+        2. 每帧一个页面，标帧号与说明
+        3. 调参面板包含视觉参数（色值/字号/间距/圆角/投影）和行为参数（动效时长/缓动/幅度/延迟）
+        4. 帧图里的动效承诺要单独列一份"行为规格"清单
+        输出到 {{输出文件路径}}。
+      en: |-
+        Generate a visual mockup for {{project name}} using the vibe-coding-workflow mockup template
+        (assets/mockup-template.html). Page list: {{page list}}. Requirements:
+        1. Copy the template and replace the design tokens with our style: {{style description}}
+        2. One frame per page, labeled with frame numbers and notes
+        3. The parameter panel must include visual parameters (colors/type scale/spacing/radius/shadow)
+           and behavior parameters (animation duration/easing/amplitude/delay)
+        4. List every motion promise made in the frames as a separate "behavior spec" checklist
+        Write the result to {{output file path}}.
+  - id: define-acceptance
+    title:
+      zh: 定义"完成"标准与验收测试方案
+      en: Define completion criteria and an acceptance test plan
+    description:
+      zh: 为 spec/任务书补上验收点：任务分类 + 用户可操作的验收方案
+      en: Add acceptance points to a spec/task book: task classification + user-runnable acceptance plan
+    prompt:
+      zh: |-
+        这是我项目的 spec / 实施计划：{{文档路径或粘贴内容}}。
+        请按 vibe-coding 工作流阶段 2 补上"完成"标准：
+        1. 每个任务标注分类：开发自测 / 用户验收
+        2. 写一份用户能照着操作的验收测试方案（步骤化、含预期结果）
+        3. 主观项（手感/动效/美感）给出具体观察点，不写"看着舒服"这类空话
+        4. 明确这份验收方案如何随需求变更同步更新
+        输出到 {{输出文件路径}}。
+      en: |-
+        Here is my project's spec / implementation plan: {{doc path or pasted content}}.
+        Per Stage 2 of the vibe-coding workflow, add the "done" criteria:
+        1. Tag every task as dev-self-test / user-acceptance
+        2. Write a user-runnable acceptance test plan (step-by-step, with expected results)
+        3. For subjective items (feel/motion/aesthetics), give concrete observation points,
+           never vague phrases like "looks nice"
+        4. State explicitly how this acceptance plan gets updated as requirements change
+        Write the result to {{output file path}}.
+  - id: behavior-inventory
+    title:
+      zh: 改版行为清点
+      en: Run a behavior inventory on a redesign
+    description:
+      zh: 新旧版本逐条对照行为，标保留/变更/删除，防止动效静默丢失
+      en: Compare old vs new behaviors item by item, marking keep/change/remove to prevent silent motion loss
+    prompt:
+      zh: |-
+        我正在做 {{项目名}} 的设计改版。旧版设计/实现在这里：{{旧版材料路径}}，新版视觉稿在这里：{{新版视觉稿路径}}。
+        请做一次"行为清点"：
+        1. 列出旧版每个行为（动效/交互/状态变化/数据操作），逐条对照新版，标 保留/变更/删除
+        2. 删除的行为必须写明理由；变更的写明新行为是什么
+        3. 检查新版帧图里的文字承诺（如"落进……筐"）是否都有对应的行为规格
+        4. 输出一张"行为清点表"：行为 | 旧版 | 新版 | 处置 | 理由/新行为描述
+      en: |-
+        I'm redesigning {{project name}}. Old design/implementation: {{old materials path}},
+        new visual mockup: {{new mockup path}}.
+        Run a behavior inventory:
+        1. List every behavior in the old version (motion/interaction/state changes/data operations),
+           compare against the new version, and mark each as keep/change/remove
+        2. Every removed behavior needs a reason; every change needs the new behavior described
+        3. Check that every textual promise in the new frames (e.g. "falls into the basket")
+           has a corresponding behavior spec
+        4. Output a behavior inventory table: behavior | old | new | disposition | reason/new description
